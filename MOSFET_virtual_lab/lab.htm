@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MOSFET Characteristics Virtual Lab (IRF840)</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f7fb;
+  padding: 27px;
+}
+
+h2 { text-align: center; }
+
+.panel {
+  background: #ffffff;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.row { display: flex; justify-content: space-between; align-items: center; }
+.block { flex: 1; text-align: center; }
+
+input[type=range] { width: 70%; }
+button { padding: 7px 16px; margin: 5px; cursor: pointer; }
+
+.led {
+  width: 14px; height: 14px;
+  background: red; border-radius: 50%;
+  display: inline-block; margin-left: 10px;
+}
+.led-on { background: green; }
+
+table {
+  width: 100%; border-collapse: collapse; background: #ffffff;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px; text-align: center;
+}
+th { background: #eaeaea; }
+
+/* MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+}
+.modal-content {
+  background: #fff;
+  margin: 3% auto;
+  padding: 25px;
+  width: 80%;
+  max-height: 90%;
+  overflow-y: auto;
+  border-radius: 12px;
+}
+.close {
+  float: right;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+/* IMAGE SECTION */
+.image-section {
+  margin-top: 15px;
+}
+.image-section img {
+  width: 50%;
+  max-width: 640px;
+  display: block;
+  margin: 10px auto 25px auto;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+}
+.image-section h4 {
+  text-align: center;
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>MOSFET Characteristics Virtual Lab (IRF840)</h2>
+
+<!-- POWER PANEL -->
+<div class="panel">
+  <div class="row">
+    <div class="block">
+      <b>Gate Supply VGS (0–5 V)</b><br>
+      <input type="range" id="vgs" min="0" max="5" step="0.05" value="3"
+        oninput="vgsVal.innerText=this.value">
+      <span id="vgsVal">3</span> V
+    </div>
+
+    <div class="block">
+      <b>Drain Supply VDS (0–30 V)</b><br>
+      <input type="range" id="vds" min="0" max="30" step="0.5" value="5"
+        oninput="vdsVal.innerText=this.value">
+      <span id="vdsVal">5</span> V
+    </div>
+
+    <div class="block">
+      <button onclick="powerOn()">POWER ON</button>
+      <button onclick="powerOff()">POWER OFF</button>
+      <span id="led" class="led"></span>
+    </div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="panel" style="text-align:center;">
+  <button onclick="addDrainCurve()">Add Drain Curve</button>
+  <button onclick="plotTransfer()">Plot Transfer Characteristics</button>
+  <button onclick="resetLab()">Reset</button><br><br>
+  <button style="background:#ff7a00;color:white;" onclick="openTheory()">📘 View Theory</button>
+</div>
+
+<!-- GRAPH -->
+<div class="panel">
+  <div style="width:100%; height:420px;">
+    <canvas id="graph"></canvas>
+  </div>
+</div>
+
+<!-- TABLE -->
+<h3>Observation Table</h3>
+<table id="table">
+  <tr><th>VGS (V)</th><th>VDS (V)</th><th>ID (A)</th></tr>
+</table>
+
+<!-- THEORY MODAL -->
+<div id="theoryModal" class="modal">
+<div class="modal-content">
+<span class="close" onclick="closeTheory()">&times;</span>
+
+<h2>MOSFET Characteristics Lab Manual (IRF840)</h2>
+
+<h3>1. Aim</h3>
+<p>MOSFET Characteristics Apparatus has been designed to plot the V-I Characteristics of a MOSFET (N-channel enhancement type No. IRF 840).</p>
+
+<h3>2. Apparatus Required</h3>
+<ul>
+<p>i. Two continuously variable DC regulated power supplies of 0-5V for gate and 0-30V for Drain & Gate voltage are provided.
+<li>Input Voltage  : 230 V ±10% AC, 50 Hz</li>
+<li>Load Regulation:± 0.2%</li>
+<li>Line Regulation: ± 0.05%</li>
+<li>Ripple: Less than 3 mV R.M.S.</li>
+<li>Protections:Against Short Circuit & Over Load</li>
+</p>
+<p>ii. Three meters to measure voltage & current are mounted on front panel & connections brought out on Socket.</p>
+<p>iii. One N-channel enhancement type MOSFET No. IRF 840 placed behind the cabinet & connections are brought out at sockets.</p>
+<p>iv. Complete with all necessary patch cords & leads.</p>
+</ul>
+
+<h3>3. Theory</h3>
+<ul>
+MOSFET (Metal Oxide Semiconductor Field Effect Transistor) is a field effect transistor whose drain current Iₒ is controlled by the voltage on the gate. This n-channel enhancement MOSFET finds wide application in digital circuit. MOSFET has a much higher input impedance because of very small gate leakage current. In a MOSFET gate is formed as a small capacitor. One plate of this capacitor is the gate and the other plate is the N-channel with metal oxide as the dielectric.
+When positive voltage is applied to the gate, more electrons are made available in the n-channel. Therefore,more number of conduction electrons are made available for current conduction from source to drain, as a result current from source to drain increases.
+<p>NOTE:</p>
+<p>i.In n-channel enhancement type MOSFET, Gate is can never operated with negative voltage.</p>
+<p>ii.There is no lₛₛ parameter in n-type enhancement MOSFET.
+</p>
+</ul>
+
+<!-- IMAGE SECTION -->
+<h3>4. Circuit Diagrams & Figures</h3>
+
+<div class="image-section">
+
+  <h4>Fig. 1: MOSFET Drain Characteristics Curve</h4>
+  <img src="images/MOSFET_drain_characterstics.JPG" alt="Drain Characteristics Curve">
+
+
+  <h4>Fig. 2: MOSFET Transfer Characteristics Curve</h4>
+    <img src="images/MOSFET_transfer_characterstics.JPG" alt="Transfer Characteristics Curve">
+
+  <h4>Fig. 3: MOSFET Circuit Diagram</h4>
+  <img src="images/MOSFET_circuit_diagram.JPG" alt="Trainer Kit Circuit Diagram">
+
+</div>
+
+
+
+<h3>6. Formulae</h3>
+<p><b>Ohmic Region:</b> Iₒ = Kn[(VGS − Vth)VDS − VDS²/2]</p>
+<p><b>Saturation Region:</b> Iₒ = Kn(VGS − Vth)²</p>
+
+<h3>7. Procedure</h3>
+<ul>
+<p>Drain Characteristics:
+<li>Connect the circuit as shown in Fig. (1).</li>
+<li>Keep control Knobs of both the Power supplies anticlockwise & switch on the instrument by changing the position of toggle switch to ON side provided on the front panel. LED provided on the front panel will glow indicating that instrument is ready for use.</li>
+<li>Keep V₍₉ₛ₎ (Gate to Source Voltage) constant at 2.9V.</li>
+<li>Keep Drain to Source voltage at 0.5 V & note down the corresponding Drain current.</li>
+<li>Increase the drain-source voltage in the steps of 0.5 V and note the effect of that voltage on drain current Iₒ.</li>
+<li>Now repeat the steps 4 & 5 for different Gate voltages say 2.95V, 3.0V etc and note down the observation in Table No. (3).</li>
+<li>Plot a graph between Drain to Source Voltage (V₍₉ₛ₎) and Drain Current (Iₒ) for different Gate voltages as shown in Fig (2).</li>
+
+</p>
+<p>Transfer Characteristics:
+<li>Connect the circuit as shown in Fig. (1).</li>
+<li>Keep control Knobs of both the Power supplies anticlockwise & switch on the instrument by changing the position of toggle switch to ON side provided on the front panel. LED provided on the front panel will glow indicating that instrument is ready for use.</li>
+<li>Keep V₍₉ₛ₎ (Drain to Source Voltage) constant at 20 Volts.</li>
+<li>Keep Gate to Source voltage at 0.5V and note down the drain current.</li>
+<li>Increase the gate source voltage in steps and note down corresponding drain current in Observation Table No. (4).</li>
+<li>Plot a graph between Gate-Source Voltage (V₍₉ₛ₎) and Drain Current (Iₒ) as shown in Fig (3).</li>
+</p>
+
+</div>
+</div>
+
+<script>
+const Vth=3, Kn=0.015;
+let powered=false;
+
+const ctx=graph.getContext("2d");
+const chart=new Chart(ctx,{
+  type:'line',
+  data:{labels:[],datasets:[]},
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    scales:{
+      x:{title:{display:true,text:'Voltage (V)'}},
+      y:{title:{display:true,text:'Drain Current ID (A)'}}
+    }
+  }
+});
+
+function powerOn(){powered=true;led.classList.add("led-on")}
+function powerOff(){powered=false;led.classList.remove("led-on");resetLab()}
+
+function mosfetID(VGS,VDS){
+ if(VGS<=Vth) return 0;
+ if(VDS<(VGS-Vth))
+   return Kn*((VGS-Vth)*VDS-(VDS*VDS)/2);
+ return Kn*Math.pow(VGS-Vth,2);
+}
+
+function addDrainCurve(){
+ if(!powered){alert("Power ON");return;}
+ let VGS=parseFloat(vgs.value),labels=[],data=[];
+ for(let v=0;v<=30;v+=0.5){
+  labels.push(v);
+  let id=mosfetID(VGS,v);
+  data.push(id);
+  addRow(VGS,v,id);
+ }
+ chart.data.labels=labels;
+ chart.data.datasets.push({label:`VGS=${VGS}V`,data,borderWidth:2});
+ chart.update();
+}
+
+function plotTransfer(){
+ if(!powered){alert("Power ON");return;}
+ chart.data.labels=[]; chart.data.datasets=[];
+ let labels=[],data=[];
+ for(let v=0;v<=5;v+=0.1){
+  labels.push(v.toFixed(1));
+  let id=mosfetID(v,20);
+  data.push(id);
+  addRow(v,20,id);
+ }
+ chart.data.labels=labels;
+ chart.data.datasets.push({label:"Transfer (VDS=20V)",data,borderWidth:2});
+ chart.update();
+}
+
+function addRow(vgs,vds,id){
+ let r=table.insertRow();
+ r.insertCell(0).innerText=vgs.toFixed(2);
+ r.insertCell(1).innerText=vds.toFixed(2);
+ r.insertCell(2).innerText=id.toFixed(3);
+}
+
+function resetLab(){
+ chart.data.labels=[];
+ chart.data.datasets=[];
+ chart.update();
+ table.innerHTML="<tr><th>VGS (V)</th><th>VDS (V)</th><th>ID (A)</th></tr>";
+}
+
+function openTheory(){theoryModal.style.display="block"}
+function closeTheory(){theoryModal.style.display="none"}
+</script>
+
+</body>
+</html>
